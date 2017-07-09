@@ -10,8 +10,6 @@ namespace SQLiteHelper.Tests
 {
     public class SQLitePrimitivesTests
     {
-        const string SQLiteMasterTableName = "sqlite_master";
-
         [Theory]
         [InlineData("MyTable")]
         public void TestCreateEmptyTableWithValidName(string tableName)
@@ -42,7 +40,7 @@ namespace SQLiteHelper.Tests
             {
                 Assert.Throws<SQLiteException>(() =>
                 {
-                    SQLitePrimitives.CreateEmptyTable(db, SQLiteMasterTableName);
+                    SQLitePrimitives.CreateEmptyTable(db, SQLiteHelper.SQLiteMasterTableName);
                 });
             }
         }
@@ -87,7 +85,7 @@ namespace SQLiteHelper.Tests
         {
             using (var db = TestObjects.OpenNewDatabase())
             {
-                var exists = SQLitePrimitives.TableExists(db, SQLiteMasterTableName);
+                var exists = SQLitePrimitives.TableExists(db, SQLiteHelper.SQLiteMasterTableName);
                 Assert.False(exists);
             }
         }

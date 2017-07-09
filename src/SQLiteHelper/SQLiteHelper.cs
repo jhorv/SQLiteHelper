@@ -8,6 +8,8 @@ namespace SQLiteHelper
 {
     public class SQLiteHelper
     {
+        public static readonly string SQLiteMasterTableName = "sqlite_master";
+
         readonly SQLiteCommand _cmd;
 
         public SQLiteHelper(SQLiteCommand command)
@@ -59,7 +61,7 @@ namespace SQLiteHelper
 
         public DataTable GetTableStatus()
         {
-            return Select("SELECT * FROM sqlite_master;");
+            return Select($"SELECT * FROM {SQLiteMasterTableName};");
         }
 
         public DataTable GetTableList()
@@ -124,25 +126,25 @@ namespace SQLiteHelper
             _cmd.CommandText = sql;
             if (parameters != null)
             {
-                foreach (var param in parameters)
+                foreach (var p in parameters)
                 {
-                    _cmd.Parameters.Add(param);
+                    _cmd.Parameters.Add(p);
                 }
             }
-            SQLiteDataAdapter da = new SQLiteDataAdapter(_cmd);
-            DataTable dt = new DataTable();
-            da.Fill(dt);
-            return dt;
+            var dataAdapter = new SQLiteDataAdapter(_cmd);
+            var result = new DataTable();
+            dataAdapter.Fill(result);
+            return result;
         }
 
         public void Execute(string sql)
         {
-            Execute(sql, new List<SQLiteParameter>());
+            Execute(sql, default(List<SQLiteParameter>));
         }
 
-        public void Execute(string sql, Dictionary<string, object> dicParameters = null)
+        public void Execute(string sql, Dictionary<string, object> parameters = null)
         {
-            List<SQLiteParameter> lst = GetParametersList(dicParameters);
+            List<SQLiteParameter> lst = GetParametersList(parameters);
             Execute(sql, lst);
         }
 
@@ -151,9 +153,9 @@ namespace SQLiteHelper
             _cmd.CommandText = sql;
             if (parameters != null)
             {
-                foreach (var param in parameters)
+                foreach (var p in parameters)
                 {
-                    _cmd.Parameters.Add(param);
+                    _cmd.Parameters.Add(p);
                 }
             }
             _cmd.ExecuteNonQuery();
@@ -165,9 +167,9 @@ namespace SQLiteHelper
             return _cmd.ExecuteScalar();
         }
 
-        public object ExecuteScalar(string sql, Dictionary<string, object> dicParameters = null)
+        public object ExecuteScalar(string sql, Dictionary<string, object> parameters = null)
         {
-            List<SQLiteParameter> lst = GetParametersList(dicParameters);
+            List<SQLiteParameter> lst = GetParametersList(parameters);
             return ExecuteScalar(sql, lst);
         }
 
@@ -184,21 +186,21 @@ namespace SQLiteHelper
             return _cmd.ExecuteScalar();
         }
 
-        public dataType ExecuteScalar<dataType>(string sql, Dictionary<string, object> dicParameters = null)
+        public T ExecuteScalar<T>(string sql, Dictionary<string, object> parameters = null)
         {
             List<SQLiteParameter> lst = null;
-            if (dicParameters != null)
+            if (parameters != null)
             {
                 lst = new List<SQLiteParameter>();
-                foreach (KeyValuePair<string, object> kv in dicParameters)
+                foreach (KeyValuePair<string, object> kv in parameters)
                 {
                     lst.Add(new SQLiteParameter(kv.Key, kv.Value));
                 }
             }
-            return ExecuteScalar<dataType>(sql, lst);
+            return ExecuteScalar<T>(sql, lst);
         }
 
-        public dataType ExecuteScalar<dataType>(string sql, IEnumerable<SQLiteParameter> parameters = null)
+        public T ExecuteScalar<T>(string sql, IEnumerable<SQLiteParameter> parameters = null)
         {
             _cmd.CommandText = sql;
             if (parameters != null)
@@ -208,26 +210,26 @@ namespace SQLiteHelper
                     _cmd.Parameters.Add(parameter);
                 }
             }
-            return (dataType)Convert.ChangeType(_cmd.ExecuteScalar(), typeof(dataType));
+            return (T)Convert.ChangeType(_cmd.ExecuteScalar(), typeof(T));
         }
 
-        public dataType ExecuteScalar<dataType>(string sql)
+        public T ExecuteScalar<T>(string sql)
         {
             _cmd.CommandText = sql;
-            return (dataType)Convert.ChangeType(_cmd.ExecuteScalar(), typeof(dataType));
+            return (T)Convert.ChangeType(_cmd.ExecuteScalar(), typeof(T));
         }
 
-        private List<SQLiteParameter> GetParametersList(Dictionary<string, object> dicParameters)
+        private List<SQLiteParameter> GetParametersList(Dictionary<string, object> parameters)
         {
-            List<SQLiteParameter> lst = new List<SQLiteParameter>();
-            if (dicParameters != null)
+            var list = new List<SQLiteParameter>();
+            if (parameters != null)
             {
-                foreach (KeyValuePair<string, object> kv in dicParameters)
+                foreach (var kvp in parameters)
                 {
-                    lst.Add(new SQLiteParameter(kv.Key, kv.Value));
+                    list.Add(new SQLiteParameter(kvp.Key, kvp.Value));
                 }
             }
-            return lst;
+            return list;
         }
 
         public void Insert(string tableName, Dictionary<string, object> dic)
@@ -235,7 +237,7 @@ namespace SQLiteHelper
             var sbCol = new StringBuilder();
             var sbVal = new StringBuilder();
 
-            foreach (KeyValuePair<string, object> kv in dic)
+            foreach (var kvp in dic)
             {
                 if (sbCol.Length == 0)
                 {
@@ -249,7 +251,7 @@ namespace SQLiteHelper
                 }
 
                 sbCol.Append("`");
-                sbCol.Append(kv.Key);
+                sbCol.Append(kvp.Key);
                 sbCol.Append("`");
 
                 if (sbVal.Length == 0)
@@ -262,7 +264,7 @@ namespace SQLiteHelper
                 }
 
                 sbVal.Append("@v");
-                sbVal.Append(kv.Key);
+                sbVal.Append(kvp.Key);
             }
 
             sbCol.Append(") ");
@@ -270,9 +272,9 @@ namespace SQLiteHelper
 
             _cmd.CommandText = sbCol.ToString() + sbVal.ToString();
 
-            foreach (KeyValuePair<string, object> kv in dic)
+            foreach (var kvp in dic)
             {
-                _cmd.Parameters.AddWithValue("@v" + kv.Key, kv.Value);
+                _cmd.Parameters.AddWithValue("@v" + kvp.Key, kvp.Value);
             }
 
             _cmd.ExecuteNonQuery();
@@ -280,7 +282,7 @@ namespace SQLiteHelper
 
         public void Update(string tableName, Dictionary<string, object> dicData, string colCond, object varCond)
         {
-            Dictionary<string, object> dic = new Dictionary<string, object>();
+            var dic = new Dictionary<string, object>();
             dic[colCond] = varCond;
             Update(tableName, dicData, dic);
         }
@@ -292,17 +294,17 @@ namespace SQLiteHelper
 
             var sbData = new StringBuilder();
 
-            Dictionary<string, object> _dicTypeSource = new Dictionary<string, object>();
+            var _dicTypeSource = new Dictionary<string, object>();
 
-            foreach (KeyValuePair<string, object> kv1 in dicData)
+            foreach (var kvp in dicData)
             {
-                _dicTypeSource[kv1.Key] = null;
+                _dicTypeSource[kvp.Key] = null;
             }
 
-            foreach (KeyValuePair<string, object> kv2 in dicCond)
+            foreach (var kvp in dicCond)
             {
-                if (!_dicTypeSource.ContainsKey(kv2.Key))
-                    _dicTypeSource[kv2.Key] = null;
+                if (!_dicTypeSource.ContainsKey(kvp.Key))
+                    _dicTypeSource[kvp.Key] = null;
             }
 
             sbData.Append("update `");
@@ -311,7 +313,7 @@ namespace SQLiteHelper
 
             bool firstRecord = true;
 
-            foreach (KeyValuePair<string, object> kv in dicData)
+            foreach (var kvp in dicData)
             {
                 if (firstRecord)
                     firstRecord = false;
@@ -319,18 +321,18 @@ namespace SQLiteHelper
                     sbData.Append(",");
 
                 sbData.Append("`");
-                sbData.Append(kv.Key);
+                sbData.Append(kvp.Key);
                 sbData.Append("` = ");
 
                 sbData.Append("@v");
-                sbData.Append(kv.Key);
+                sbData.Append(kvp.Key);
             }
 
             sbData.Append(" where ");
 
             firstRecord = true;
 
-            foreach (KeyValuePair<string, object> kv in dicCond)
+            foreach (var kvp in dicCond)
             {
                 if (firstRecord)
                     firstRecord = false;
@@ -340,25 +342,25 @@ namespace SQLiteHelper
                 }
 
                 sbData.Append("`");
-                sbData.Append(kv.Key);
+                sbData.Append(kvp.Key);
                 sbData.Append("` = ");
 
                 sbData.Append("@c");
-                sbData.Append(kv.Key);
+                sbData.Append(kvp.Key);
             }
 
             sbData.Append(";");
 
             _cmd.CommandText = sbData.ToString();
 
-            foreach (KeyValuePair<string, object> kv in dicData)
+            foreach (var kvp in dicData)
             {
-                _cmd.Parameters.AddWithValue("@v" + kv.Key, kv.Value);
+                _cmd.Parameters.AddWithValue("@v" + kvp.Key, kvp.Value);
             }
 
-            foreach (KeyValuePair<string, object> kv in dicCond)
+            foreach (var kvp in dicCond)
             {
-                _cmd.Parameters.AddWithValue("@c" + kv.Key, kv.Value);
+                _cmd.Parameters.AddWithValue("@c" + kvp.Key, kvp.Value);
             }
 
             _cmd.ExecuteNonQuery();
@@ -382,7 +384,7 @@ namespace SQLiteHelper
 
             bool firstRecord = true;
 
-            foreach (SQLiteColumn col in table.Columns)
+            foreach (var col in table.Columns)
             {
                 if (string.IsNullOrWhiteSpace(col.Name))
                 {
@@ -422,7 +424,7 @@ namespace SQLiteHelper
                     sb.Append(" primary key");
                 else if (col.NotNull)
                     sb.Append(" not null");
-                else if (col.DefaultValue.Length > 0)
+                else if (!string.IsNullOrEmpty(col.DefaultValue))
                 {
                     sb.Append(" default ");
 
@@ -447,48 +449,52 @@ namespace SQLiteHelper
 
         public void RenameTable(string tableFrom, string tableTo)
         {
-            _cmd.CommandText = string.Format("alter table `{0}` rename to `{1}`;", tableFrom, tableTo);
+            tableFrom = QuoteIdentifier(tableFrom);
+            tableTo = QuoteIdentifier(tableTo);
+            _cmd.CommandText = $"alter table {tableFrom} rename to {tableTo};";
             _cmd.ExecuteNonQuery();
         }
 
         public void CopyAllData(string tableFrom, string tableTo)
         {
+            tableFrom = QuoteIdentifier(tableFrom);
+            tableTo = QuoteIdentifier(tableTo);
             DataTable dt1 = Select(string.Format("select * from `{0}` where 1 = 2;", tableFrom));
             DataTable dt2 = Select(string.Format("select * from `{0}` where 1 = 2;", tableTo));
 
-            Dictionary<string, bool> dic = new Dictionary<string, bool>();
+            var dic = new Dictionary<string, bool>();
 
-            foreach (DataColumn dc in dt1.Columns)
+            foreach (DataColumn dataColumn in dt1.Columns)
             {
-                if (dt2.Columns.Contains(dc.ColumnName))
+                if (dt2.Columns.Contains(dataColumn.ColumnName))
                 {
-                    if (!dic.ContainsKey(dc.ColumnName))
+                    if (!dic.ContainsKey(dataColumn.ColumnName))
                     {
-                        dic[dc.ColumnName] = true;
+                        dic[dataColumn.ColumnName] = true;
                     }
                 }
             }
 
-            foreach (DataColumn dc in dt2.Columns)
+            foreach (DataColumn dataColumn in dt2.Columns)
             {
-                if (dt1.Columns.Contains(dc.ColumnName))
+                if (dt1.Columns.Contains(dataColumn.ColumnName))
                 {
-                    if (!dic.ContainsKey(dc.ColumnName))
+                    if (!dic.ContainsKey(dataColumn.ColumnName))
                     {
-                        dic[dc.ColumnName] = true;
+                        dic[dataColumn.ColumnName] = true;
                     }
                 }
             }
 
             var sb = new StringBuilder();
 
-            foreach (KeyValuePair<string, bool> kv in dic)
+            foreach (var kvp in dic)
             {
                 if (sb.Length > 0)
                     sb.Append(",");
 
                 sb.Append("`");
-                sb.Append(kv.Key);
+                sb.Append(kvp.Key);
                 sb.Append("`");
             }
 
