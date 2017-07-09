@@ -1,9 +1,4 @@
-﻿// Version 1.2
-// Date: 2014-03-27
-// http://sh.codeplex.com
-// Dedicated to Public Domain
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
@@ -11,15 +6,6 @@ using System.Text;
 
 namespace SQLiteHelper
 {
-    public enum ColType
-    {
-        Text,
-        DateTime,
-        Integer,
-        Decimal,
-        BLOB
-    }
-
     public class SQLiteHelper
     {
         readonly SQLiteCommand _cmd;
@@ -27,6 +13,46 @@ namespace SQLiteHelper
         public SQLiteHelper(SQLiteCommand command)
         {
             _cmd = command;
+        }
+
+        public static string QuoteIdentifier(string value)
+        {
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+            if (IsQuotedIdentifier(value))
+                return value;
+            value = value.Replace("\"", "\"\"");
+            return $"\"{value}\"";
+        }
+
+        public static string QuoteLiteral(string value)
+        {
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+            if (IsQuotedLiteral(value))
+                return value;
+            value = value.Replace("'", "''");
+            return $"'{value}'";
+        }
+
+        public static bool IsQuotedIdentifier(string value)
+        {
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+
+            return
+                (value.StartsWith("\"") && value.EndsWith("\""))
+                || (value.StartsWith("[") && value.EndsWith("]"))
+                || (value.StartsWith("`") && value.EndsWith("`"))
+                ;
+        }
+
+        public static bool IsQuotedLiteral(string value)
+        {
+            if (value == null)
+                throw new ArgumentNullException(nameof(value));
+
+            return value.StartsWith("'") && value.EndsWith("'");
         }
 
         #region DB Info
@@ -204,17 +230,10 @@ namespace SQLiteHelper
             return lst;
         }
 
-        public string Escape(string data)
-        {
-            data = data.Replace("'", "''");
-            data = data.Replace("\\", "\\\\");
-            return data;
-        }
-
         public void Insert(string tableName, Dictionary<string, object> dic)
         {
-            StringBuilder sbCol = new System.Text.StringBuilder();
-            StringBuilder sbVal = new System.Text.StringBuilder();
+            var sbCol = new StringBuilder();
+            var sbVal = new StringBuilder();
 
             foreach (KeyValuePair<string, object> kv in dic)
             {
@@ -271,7 +290,7 @@ namespace SQLiteHelper
             if (dicData.Count == 0)
                 throw new Exception("dicData is empty.");
 
-            StringBuilder sbData = new System.Text.StringBuilder();
+            var sbData = new StringBuilder();
 
             Dictionary<string, object> _dicTypeSource = new Dictionary<string, object>();
 
@@ -356,16 +375,16 @@ namespace SQLiteHelper
 
         public void CreateTable(SQLiteTable table)
         {
-            StringBuilder sb = new System.Text.StringBuilder();
+            var sb = new StringBuilder();
             sb.Append("create table if not exists `");
-            sb.Append(table.TableName);
+            sb.Append(table.Name);
             sb.AppendLine("`(");
 
             bool firstRecord = true;
 
             foreach (SQLiteColumn col in table.Columns)
             {
-                if (col.ColumnName.Trim().Length == 0)
+                if (string.IsNullOrWhiteSpace(col.Name))
                 {
                     throw new Exception("Column name cannot be blank.");
                 }
@@ -375,7 +394,7 @@ namespace SQLiteHelper
                 else
                     sb.AppendLine(",");
 
-                sb.Append(col.ColumnName);
+                sb.Append(col.Name);
                 sb.Append(" ");
 
                 if (col.AutoIncrement)
@@ -385,17 +404,17 @@ namespace SQLiteHelper
                     continue;
                 }
 
-                switch (col.ColDataType)
+                switch (col.Type)
                 {
-                    case ColType.Text:
+                    case ColumnType.Text:
                         sb.Append("text"); break;
-                    case ColType.Integer:
+                    case ColumnType.Integer:
                         sb.Append("integer"); break;
-                    case ColType.Decimal:
+                    case ColumnType.Decimal:
                         sb.Append("decimal"); break;
-                    case ColType.DateTime:
+                    case ColumnType.DateTime:
                         sb.Append("datetime"); break;
-                    case ColType.BLOB:
+                    case ColumnType.Blob:
                         sb.Append("blob"); break;
                 }
 
@@ -407,7 +426,7 @@ namespace SQLiteHelper
                 {
                     sb.Append(" default ");
 
-                    if (col.DefaultValue.Contains(" ") || col.ColDataType == ColType.Text || col.ColDataType == ColType.DateTime)
+                    if (col.DefaultValue.Contains(" ") || col.Type == ColumnType.Text || col.Type == ColumnType.DateTime)
                     {
                         sb.Append("'");
                         sb.Append(col.DefaultValue);
@@ -461,7 +480,7 @@ namespace SQLiteHelper
                 }
             }
 
-            StringBuilder sb = new System.Text.StringBuilder();
+            var sb = new StringBuilder();
 
             foreach (KeyValuePair<string, bool> kv in dic)
             {
@@ -473,7 +492,7 @@ namespace SQLiteHelper
                 sb.Append("`");
             }
 
-            StringBuilder sb2 = new System.Text.StringBuilder();
+            var sb2 = new StringBuilder();
             sb2.Append("insert into `");
             sb2.Append(tableTo);
             sb2.Append("`(");
@@ -496,15 +515,15 @@ namespace SQLiteHelper
 
         public void UpdateTableStructure(string targetTable, SQLiteTable newStructure)
         {
-            newStructure.TableName = targetTable + "_temp";
+            newStructure.Name = targetTable + "_temp";
 
             CreateTable(newStructure);
 
-            CopyAllData(targetTable, newStructure.TableName);
+            CopyAllData(targetTable, newStructure.Name);
 
             DropTable(targetTable);
 
-            RenameTable(newStructure.TableName, targetTable);
+            RenameTable(newStructure.Name, targetTable);
         }
 
         public void AttachDatabase(string database, string alias)

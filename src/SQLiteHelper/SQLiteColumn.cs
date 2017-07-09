@@ -2,68 +2,51 @@
 {
     public class SQLiteColumn
     {
-        public string ColumnName = "";
-        public bool PrimaryKey = false;
-        public ColType ColDataType = ColType.Text;
-        public bool AutoIncrement = false;
-        public bool NotNull = false;
-        public string DefaultValue = "";
-
-        public SQLiteColumn()
-        { }
-
-        public SQLiteColumn(string colName)
+        public static SQLiteColumn CreateIntegerPrimaryKey(string name)
         {
-            ColumnName = colName;
-            PrimaryKey = false;
-            ColDataType = ColType.Text;
-            AutoIncrement = false;
+            return CreatePrimaryKey(name, ColumnType.Integer);
         }
 
-        public SQLiteColumn(string colName, ColType colDataType)
+        public static SQLiteColumn CreatePrimaryKey(string name, ColumnType type)
         {
-            ColumnName = colName;
-            PrimaryKey = false;
-            ColDataType = colDataType;
-            AutoIncrement = false;
+            return new SQLiteColumn
+            {
+                Name = name,
+                Type = type,
+                PrimaryKey = true,
+                AutoIncrement = type == ColumnType.Integer,
+                NotNull = true
+            };
         }
 
-        public SQLiteColumn(string colName, bool autoIncrement)
+        public static SQLiteColumn Create(string name, ColumnType type, bool notNull, string defaultValue)
         {
-            ColumnName = colName;
-
-            if (autoIncrement)
+            return new SQLiteColumn
             {
-                PrimaryKey = true;
-                ColDataType = ColType.Integer;
-                AutoIncrement = true;
-            }
-            else
-            {
-                PrimaryKey = false;
-                ColDataType = ColType.Text;
-                AutoIncrement = false;
-            }
+                Name = name,
+                Type = type,
+                NotNull = notNull,
+                DefaultValue = defaultValue
+            };
         }
 
-        public SQLiteColumn(string colName, ColType colDataType, bool primaryKey, bool autoIncrement, bool notNull, string defaultValue)
+        public static SQLiteColumn CreateRequired(string name, ColumnType type)
         {
-            ColumnName = colName;
-
-            if (autoIncrement)
+            return new SQLiteColumn
             {
-                PrimaryKey = true;
-                ColDataType = ColType.Integer;
-                AutoIncrement = true;
-            }
-            else
-            {
-                PrimaryKey = primaryKey;
-                ColDataType = colDataType;
-                AutoIncrement = false;
-                NotNull = notNull;
-                DefaultValue = defaultValue;
-            }
+                Name = name,
+                Type = type,
+                NotNull = true
+            };
         }
+
+        public SQLiteColumn() { }
+
+        public string Name { get; set; }
+        public ColumnType Type { get; set; }
+        public bool PrimaryKey { get; set; }
+        public bool AutoIncrement { get; set; }
+        public bool NotNull { get; set; }
+        public string DefaultValue { get; set; }
     }
 }

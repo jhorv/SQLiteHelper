@@ -2,15 +2,18 @@
 {
     public class SQLiteTable
     {
-        public string TableName = "";
-        public SQLiteColumnList Columns = new SQLiteColumnList();
-
         public SQLiteTable()
-        { }
+            : this(null)
+        {
+        }
 
         public SQLiteTable(string name)
         {
-            TableName = name;
+            Name = name;
+            Columns = new SQLiteColumnList();
         }
+
+        public string Name { get; set; }
+        public SQLiteColumnList Columns { get; }
     }
 }
