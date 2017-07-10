@@ -2,6 +2,26 @@
 {
     public class SQLiteColumn
     {
+        public static SQLiteColumn Create(string name, ColumnType type)
+        {
+            return new SQLiteColumn
+            {
+                Name = name,
+                Type = type,
+            };
+        }
+
+        public static SQLiteColumn Create(string name, ColumnType type, bool notNull, string defaultValue)
+        {
+            return new SQLiteColumn
+            {
+                Name = name,
+                Type = type,
+                NotNull = notNull,
+                DefaultValue = defaultValue
+            };
+        }
+
         public static SQLiteColumn CreateIntegerPrimaryKey(string name)
         {
             return CreatePrimaryKey(name, ColumnType.Integer);
@@ -16,17 +36,6 @@
                 PrimaryKey = true,
                 AutoIncrement = type == ColumnType.Integer,
                 NotNull = true
-            };
-        }
-
-        public static SQLiteColumn Create(string name, ColumnType type, bool notNull, string defaultValue)
-        {
-            return new SQLiteColumn
-            {
-                Name = name,
-                Type = type,
-                NotNull = notNull,
-                DefaultValue = defaultValue
             };
         }
 
