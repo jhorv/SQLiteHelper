@@ -18,7 +18,7 @@ namespace SQLiteHelper.Tests
             return db;
         }
 
-        public static SQLiteTable NewPeopleTableSpec()
+        public static SQLiteTable NewPersonTableSpec()
         {
             var table = new SQLiteTable("Person");
             table.Columns.Add(SQLiteColumn.CreateIntegerPrimaryKey("Id"));

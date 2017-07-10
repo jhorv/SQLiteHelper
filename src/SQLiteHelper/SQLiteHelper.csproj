@@ -37,18 +37,28 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ColumnType.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="SQLiteConnectionExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SQLiteColumn.cs" />
     <Compile Include="SQLiteColumnList.cs" />
-    <Compile Include="SQLiteHelper.cs" />
+    <Compile Include="SQLiteParameterCollectionExtensions.cs" />
+    <Compile Include="SQLiteString.cs" />
     <Compile Include="SQLiteTable.cs" />
+    <Compile Include="StringBuilderExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="System.Data.SQLite.Core">
       <Version>1.0.105.2</Version>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="SQLiteHelper.nuspec" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>"$(SolutionDir)nuget.exe" pack "$(ProjectPath)" -Prop Configuration=$(ConfigurationName)</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

@@ -28,7 +28,7 @@ namespace SQLiteHelper.Tests
             using (var db = TestObjects.OpenNewDatabase())
             {
                 SQLitePrimitives.CreateEmptyTable(db, tableName);
-                var exists = SQLitePrimitives.TableExists(db, tableName);
+                var exists = db.TableExists(tableName);
                 Assert.True(exists);
             }
         }
@@ -40,7 +40,7 @@ namespace SQLiteHelper.Tests
             {
                 Assert.Throws<SQLiteException>(() =>
                 {
-                    SQLitePrimitives.CreateEmptyTable(db, SQLiteHelper.SQLiteMasterTableName);
+                    SQLitePrimitives.CreateEmptyTable(db, Constants.SQLiteMasterTableName);
                 });
             }
         }
@@ -63,7 +63,7 @@ namespace SQLiteHelper.Tests
             using (var db = TestObjects.OpenNewDatabase())
             {
                 SQLitePrimitives.CreateEmptyTable(db, tableName);
-                var exists = SQLitePrimitives.TableExists(db, tableName);
+                var exists = db.TableExists(tableName);
                 Assert.True(exists);
             }
         }
@@ -75,7 +75,7 @@ namespace SQLiteHelper.Tests
         {
             using (var db = TestObjects.OpenNewDatabase())
             {
-                var exists = SQLitePrimitives.TableExists(db, tableName);
+                var exists = db.TableExists(tableName);
                 Assert.False(exists);
             }
         }
@@ -85,7 +85,7 @@ namespace SQLiteHelper.Tests
         {
             using (var db = TestObjects.OpenNewDatabase())
             {
-                var exists = SQLitePrimitives.TableExists(db, SQLiteHelper.SQLiteMasterTableName);
+                var exists = db.TableExists(Constants.SQLiteMasterTableName);
                 Assert.False(exists);
             }
         }

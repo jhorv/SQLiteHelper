@@ -24,22 +24,5 @@ namespace SQLiteHelper.Tests
                 return rowsAffected;
             }
         }
-
-        /// <summary>
-        /// Execute the SQL and return the first column of the first row of
-        /// the resultset (if present), or null if no resultset was returned;
-        /// </summary>
-        /// <param name="this"></param>
-        /// <param name="sql"></param>
-        /// <returns></returns>
-        public static object ExecuteScalar(this SQLiteConnection @this, string sql)
-        {
-            using (var command = @this.CreateCommand())
-            {
-                command.CommandText = sql;
-                object result = command.ExecuteScalar();
-                return result;
-            }
-        }
     }
 }

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>SQLiteHelper-Redeux</id>
+    <version>2.0.0.0</version>
+    <title>SQLiteHelper Redeux</title>
+    <authors>andrew-su jho</authors>
+    <owners>jho</owners>
+    <licenseUrl>https://raw.githubusercontent.com/jhorv/SQLiteHelper/master/LICENSE</licenseUrl>
+    <projectUrl>https://github.com/jhorv/SQLiteHelper</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Easy access to frequently-used SQLite operations - things that otherwise need be done with hard-coded SQL strings.</description>
+    <releaseNotes>First release.</releaseNotes>
+    <copyright>Copyright 2017</copyright>
+    <tags>SQLite System.Data.SQLite</tags>
+  </metadata>
+</package>
