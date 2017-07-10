@@ -300,7 +300,7 @@ namespace SQLiteHelper
             using (var command = @this.CreateCommand())
             {
                 command.CommandText = sql;
-                command.Parameters.Add(parameters);
+                command.Parameters.AddRange(parameters);
                 var dataAdapter = new SQLiteDataAdapter(command);
                 var result = new DataTable();
                 dataAdapter.Fill(result);
